@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BSSC CGL 4 Ultimate Mock & PYQ Portal</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 15px; background-color: #f4f6f9; color: #333; }
+        .container { max-width: 650px; margin: auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        h2 { text-align: center; color: #0b5ed7; border-bottom: 3px solid #0b5ed7; padding-bottom: 12px; margin-top: 0; font-size: 24px; }
+        label { font-weight: bold; font-size: 16px; display: block; margin-top: 15px; }
+        select, button { width: 100%; padding: 12px; margin-top: 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 16px; box-sizing: border-box; }
+        button { background-color: #0b5ed7; color: white; border: none; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        button:hover { background-color: #0a58ca; }
+        .stats-bar { display: flex; justify-content: space-between; margin-bottom: 20px; font-weight: bold; background: #e7f1ff; padding: 12px; border-radius: 6px; font-size: 14px; border: 1px solid #b6d4fe; }
+        .timer { color: #dc3545; }
+        .badge { background-color: #6c757d; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: normal; vertical-align: middle; margin-left: 5px; }
+        .pyq-badge { background-color: #fd7e14; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; vertical-align: middle; margin-left: 5px; }
+        .question { margin-top: 15px; font-weight: bold; font-size: 18px; color: #111; line-height: 1.5; }
+        .options { list-style-type: none; padding: 0; margin-top: 15px; }
+        .options li { margin: 12px 0; padding: 14px; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 6px; cursor: pointer; transition: 0.2s; font-size: 16px; }
+        .options li:hover { background: #e9ecef; border-color: #ced4da; }
+        .hint-box { margin-top: 15px; padding: 15px; background-color: #fff3cd; border-left: 5px solid #ffc107; border-radius: 4px; font-size: 14px; color: #664d03; display: none; line-height: 1.4; }
+        .hidden { display: none; }
+        #result { margin-top: 20px; text-align: center; font-size: 18px; line-height: 1.6; }
+        .score-big { font-size: 32px; color: #198754; font-weight: bold; margin: 15px 0; }
+        #next-btn { background-color: #198754; margin-top: 15px; }
+        #next-btn:hover { background-color: #157347; }
+        #restart-btn { background-color: #6c757d; margin-top: 15px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>BSSC CGL (IV) परीक्षा अभ्यास पोर्टल</h2>
+
+        <!-- मुख्य स्क्रीन -->
+        <div id="setup-screen">
+            <label for="topic">टेस्ट का प्रकार चुनें:</label>
+            <select id="topic">
+                <option value="pyq">🔥 BSSC CGL प्रीवियस ईयर पेपर्स (PYQs)</option>
+                <option value="full">🏆 FULL MOCK TEST (सभी विषयों का कंबाइंड पेपर)</option>
+                <option value="gk">📚 सामान्य अध्ययन (General Studies)</option>
+                <option value="science">🧪 सामान्य विज्ञान (General Science)</option>
+                <option value="math">🧮 गणित (Mathematics)</option>
+                <option value="reasoning">🧠 मानसिक क्षमता जाँच (Reasoning)</option>
+            </select>
+            <div style="font-size: 13px; color: #333; background: #fff3cd; padding: 12px; border-radius: 6px; margin-top: 15px; border: 1px solid #ffe69c;">
+                📌 <b>परीक्षा निर्देश:</b><br>
+                • <b>PYQ मोड</b> में पिछले BSSC CGL एग्जाम्स में पूछे गए वास्तविक प्रश्न शामिल हैं।<br>
+                • मार्किंग: सही उत्तर पर <b>+4 अंक</b> | गलत उत्तर पर <b>-1 अंक</b> (Negative Marking).<br>
+                • प्रत्येक प्रश्न पर 50 सेकंड की समय सीमा लागू रहेगी।
+            </div>
+            <button onclick="startTest()">टेस्ट प्रारंभ करें</button>
+        </div>
+
+        <!-- टेस्ट स्क्रीन -->
+        <div id="quiz-screen" class="hidden">
+            <div class="stats-bar">
+                <div id="q-count">प्रश्न: 1/5</div>
+                <div id="live-score">अंक: 0</div>
+                <div class="timer">समय: <span id="time-left">50</span>s</div>
+            </div>
+            
+            <div id="question-container"></div>
+            <div id="hint-container" class="hint-box"></div>
+            
+            <button id="next-btn" class="hidden" onclick="nextQuestion()">अगला प्रश्न ❯</button>
+            <button id="restart-btn" class="hidden" onclick="restartTest()">मुख्य पृष्ठ पर जाएँ ↺</button>
+        </div>
+    </div>
+
+    <script>
+        // विषयवार और प्रीवियस ईयर प्रश्नों का विस्तृत डेटाबेस
+        const questionBank = {
+            pyq: [
+                { q: "बिहार में स्थायी बंदोबस्त (Permanent Settlement) लागू करने का मुख्य कारण क्या था?", options: ["जमींदारों का भूमि पर अधिकार नष्ट करना", "जमींदारों के लिए जमीन पर वंशपारंपरिक अधिकार को स्वेच्छा से हस्तांतरित करना", "भू-राजस्व का राजस्व निर्णय करना", "जमींदारी प्रथा का उन्मूलन"], ans: "भू-राजस्व का राजस्व निर्णय करना", hint: "<b>BSSC CGL PYQ:</b> लॉर्ड कॉर्नवालिस द्वारा 1793 में स्थायी बंदोबस्त लागू किया गया था। इसका मुख्य उद्देश्य कंपनी के लिए भू-राजस्व (Land Revenue) की एक निश्चित राशि तय करना था।", type: "PYQ - GS" },
+                { q: "जगदीशपुर (बिहार) में 1857 के विप्लव/क्रांति के नेता कौन थे?", options: ["कुंवर सिंह", "ताना भगत", "नाना साहब", "तीरथ सिंह"], ans: "कुंवर सिंह", hint: "<b>BSSC CGL PYQ:</b> बाबू कुंवर सिंह जगदीशपुर के जमींदार थे, जिन्होंने 80 वर्ष की आयु में 1857 की क्रांति में बिहार का सफल नेतृत्व किया था और अंग्रेजों को धूल चटाई थी।", type: "PYQ - GS" },
+                { q: "एक सिंह वाले गैंडे (One-horned Rhino) के लिए प्रसिद्ध 'काजीरंगा राष्ट्रीय उद्यान' किस राज्य में स्थित है?", options: ["असम", "पश्चिम बंगाल", "अरुणाचल प्रदेश", "ओडिशा"], ans: "असम", hint: "<b>BSSC CGL PYQ:</b> काजीरंगा राष्ट्रीय उद्यान असम में स्थित है। यह यूनेस्को (UNESCO) की विश्व धरोहर सूची में भी शामिल है और यहाँ दुनिया के सबसे ज्यादा एक सींग वाले गैंडे पाए जाते हैं।", type: "PYQ - GS" },
+                { q: "यदि $A : B = 3 : 4$ तथा $B : C = 8 : 9$ हो, तो $A : C$ का मान क्या होगा?", options: ["2 : 3", "1 : 2", "3 : 2", "4 : 3"], ans: "2 : 3", hint: "<b>BSSC CGL PYQ (Math):</b> $\\frac{A}{C} = \\frac{A}{B} \\times \\frac{B}{C} = \\frac{3}{4} \\times \\frac{8}{9} = \\frac{1 \\times 2}{1 \\times 3} = \\frac{2}{3}$. यानी 2 : 3।", type: "PYQ - MATH" },
+                { q: "नीचे दी गई श्रृंखला में लुप्त संख्या (?) ज्ञात कीजिए: 5, 11, 23, 47, ?", options: ["95", "96", "94", "98"], ans: "95", hint: "<b>BSSC CGL PYQ (Reasoning):</b> पैटर्न है: $(नंबर \\times 2) + 1$ <br>5*2+1 = 11, 11*2+1 = 23, 23*2+1 = 47, इसी प्रकार 47*2+1 = 94+1 = 95।", type: "PYQ - REASONING" }
+            ],
+            gk: [
+                { q: "बिहार में 'तिनकठिया पद्धति' के तहत नील की खेती के लिए कितनी भूमि आरक्षित की जानी थी?", options: ["3/20 भाग", "3/10 भाग", "1/20 भाग", "5/20 भाग"], ans: "3/20 भाग", hint: "व्याख्या: चंपारण में किसानों को अपनी प्रति बीघा (20 कट्ठा) जमीन के 3 कट्ठे पर नील की खेती करना अनिवार्य था, जिसे गांधीजी ने 1917 के चंपारण सत्याग्रह से समाप्त करवाया।", type: "सामान्य अध्ययन" },
+                { q: "संविधान के किस अनुच्छेद के तहत राज्यों में 'राज्यपाल' की व्यवस्था की गई है?", options: ["अनुच्छेद 153", "अनुच्छेद 155", "अनुच्छेद 163", "अनुच्छेद 123"], ans: "अनुच्छेद 153", hint: "व्याख्या: अनुच्छेद 153 के अनुसार प्रत्येक राज्य के लिए एक राज्यपाल होगा। जबकि अनुच्छेद 155 के तहत राष्ट्रपति इनकी नियुक्ति करते हैं।", type: "सामान्य अध्ययन" },
+                { q: "जैन धर्म के 24वें तीर्थंकर महावीर स्वामी का जन्म बिहार में कहाँ हुआ था?", options: ["कुंडग्राम (वैशाली)", "पावापुरी", "लौरिया", "बोधगया"], ans: "कुंडग्राम (वैशाली)", hint: "व्याख्या: महावीर स्वामी का जन्म वैशाली के निकट कुंडग्राम में हुआ था और उनका निर्वाण (मृत्यु) पावापुरी में हुआ था।", type: "सामान्य अध्ययन" }
+            ],
+            science: [
+                { q: "यदि किसी वस्तु का वेग (Velocity) दोगुना कर दिया जाए, तो उसकी गतिज ऊर्जा (Kinetic Energy) पर क्या प्रभाव पड़ेगा?", options: ["दोगुनी हो जाएगी", "चार गुनी हो जाएगी", "आधी रह जाएगी", "अपरिवर्तित रहेगी"], ans: "चार गुनी हो जाएगी", hint: "सूत्र: $K.E. = \\frac{1}{2}mv^2$ होता है। वेग ($v$) को दोगुना करने पर ऊर्जा ($2^2 = 4$) गुना हो जाएगी।", type: "सामान्य विज्ञान" },
+                { q: "मानव शरीर में रक्त का थक्का (Blood Clotting) जमाने में कौन सा विटामिन सहायक होता है?", options: ["विटामिन K", "विटामिन E", "विटामिन C", "विटामिन D"], ans: "विटामिन K", hint: "व्याख्या: विटामिन K (फिलोक्विनोन) यकृत में प्रोथ्रोम्बिन नामक प्रोटीन बनाने के लिए आवश्यक है जो रक्त का थक्का जमाता है।", type: "सामान्य विज्ञान" }
+            ],
+            math: [
+                { q: "एक परीक्षा में उत्तीर्ण होने के लिए 36% अंकों की आवश्यकता है। एक छात्र को 190 अंक मिले और वह 26 अंकों से अनुत्तीर्ण हो गया। परीक्षा के कुल पूर्णांक क्या हैं?", options: ["500", "600", "550", "650"], ans: "600", hint: "हल: पास होने के लिए आवश्यक अंक = 190 + 26 = 216. यानी, कुल अंक का 36% = 216. कुल पूर्णांक = $(216 / 36) \\times 100 = 600$.", type: "गणित" },
+                { q: "यदि 15 वस्तुओं का क्रय मूल्य (CP), 12 वस्तुओं के विक्रय मूल्य (SP) के बराबर है, तो लाभ प्रतिशत ज्ञात करें।", options: ["20%", "25%", "15%", "30%"], ans: "25%", hint: "शॉर्टकट: $15CP = 12SP \\Rightarrow \\frac{CP}{SP} = \\frac{12}{15} = \\frac{4}{5}$. लाभ = 1. लाभ% = $(\\frac{1}{4}) \\times 100 = 25\\%$.", type: "गणित" }
+            ],
+            reasoning: [
+                { q: "यदि एक कूट भाषा में 'BIHAR' को 'CJIBS' लिखा जाता है, तो उसी भाषा में 'PATNA' को क्या लिखा जाएगा?", options: ["QBUOB", "QBVOB", "OZSMB", "QBUOA"], ans: "QBUOB", hint: "लॉजिक: यहाँ हर अक्षर में +1 जोड़ा गया है। P+1=Q, A+1=B, T+1=U, N+1=O, A+1=B. अतः QBUOB होगा।", type: "रीजनिंग" },
+                { q: "एक व्यक्ति पूर्व की ओर 5 किमी चलता है, फिर बाईं ओर मुड़कर 12 किमी चलता है। वह अपने प्रारंभिक बिंदु से कितनी दूरी पर है?", options: ["17 किमी", "13 किमी", "7 किमी", "14 किमी"], ans: "13 किमी", hint: "लॉजिक: यहाँ समकोण त्रिभुज बनेगा (पाइथागोरस प्रमेय)। दूरी = $\\sqrt{5^2 + 12^2} = \\sqrt{25 + 144} = \\sqrt{169} = 13$ किमी।", type: "रीजनिंग" }
+            ]
+        };
+
+        let currentQuestions = [];
+        let currentQuestionIndex = 0;
+        let totalMarks = 0;
+        let timerInterval;
+        let timeLeft = 50;
+
+        function startTest() {
+            const selectedMode = document.getElementById("topic").value;
+            
+            if (selectedMode === "full") {
+                currentQuestions = [
+                    ...questionBank.gk,
+                    ...questionBank.science,
+                    ...questionBank.math,
+                    ...questionBank.reasoning
+                ];
+            } else {
+                currentQuestions = [...questionBank[selectedMode]];
+            }
+            
+            currentQuestions.sort(() => 0.5 - Math.random());
+            currentQuestionIndex = 0;
+            totalMarks = 0;
+
+            document.getElementById("setup-screen").classList.add("hidden");
+            document.getElementById("quiz-screen").classList.remove("hidden");
+            document.getElementById("restart-btn").classList.add("hidden");
+            
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            clearInterval(timerInterval);
+            if (currentQuestionIndex >= currentQuestions.length) {
+                showResult();
+                return;
+            }
+
+            timeLeft = 50;
+            document.getElementById("time-left").innerText = timeLeft;
+            document.getElementById("q-count").innerText = `प्रश्न: ${currentQuestionIndex + 1}/${currentQuestions.length}`;
+            document.getElementById("live-score").innerText = `अंक: ${totalMarks}`;
+            document.getElementById("next-btn").classList.add("hidden");
+            document.getElementById("hint-container").style.display = "none";
+
+            const qContainer = document.getElementById("question-container");
+            const qData = currentQuestions[currentQuestionIndex];
+
+            // PYQ के लिए अलग ऑरेंज कलर का बैज
+            let isPYQ = qData.type.startsWith("PYQ");
+            let badgeClass = isPYQ ? "pyq-badge" : "badge";
+
+            let html = `<div class="question"><span class="${badgeClass}">${qData.type}</span> <br>${qData.q}</div><ul class="options">`;
+            qData.options.forEach(opt => {
+                html += `<li onclick="checkAnswer(this, '${opt}', '${qData.ans}')">${opt}</li>`;
+            });
+            html += `</ul>`;
+            qContainer.innerHTML = html;
+
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById("time-left").innerText = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    autoWrongAnswer(qData.ans);
+                }
+            }, 1000);
+        }
+
+        function checkAnswer(element, selected, correct) {
+            clearInterval(timerInterval);
+            const options = document.querySelectorAll(".options li");
+            options.forEach(opt => opt.style.pointerEvents = "none");
+
+            const qData = currentQuestions[currentQuestionIndex];
+            const hintBox = document.getElementById("hint-container");
+            hintBox.innerHTML = qData.hint;
+            hintBox.style.display = "block"; 
+
+            if (selected === correct) {
+                element.style.backgroundColor = "#d1e7dd";
+                element.style.borderColor = "#badbcc";
+                element.style.color = "#0f5132";
+                totalMarks += 4;
+            } else {
+                element.style.backgroundColor = "#f8d7da";
+                element.style.borderColor = "#f5c6cb";
+                element.style.color = "#842029";
+                totalMarks -= 1;
+                options.forEach(opt => {
+                    if(opt.innerText === correct) {
+                        opt.style.backgroundColor = "#d1e7dd";
+                        opt.style.color = "#0f5132";
+                    }
+                });
+            }
+            document.getElementById("live-score").innerText = `अंक: ${totalMarks}`;
+            document.getElementById("next-btn").classList.remove("hidden");
+        }
+
+        function autoWrongAnswer(correct) {
+            const options = document.querySelectorAll(".options li");
+            options.forEach(opt => {
+                opt.style.pointerEvents = "none";
+                if(opt.innerText === correct) {
+                    opt.style.backgroundColor = "#d1e7dd";
+                    opt.style.color = "#0f5132";
+                }
+            });
+            totalMarks -= 1;
+            document.getElementById("live-score").innerText = `अंक: ${totalMarks}`;
+            
+            const hintBox = document.getElementById("hint-container");
+            hintBox.innerHTML = currentQuestions[currentQuestionIndex].hint + " <br><span style='color:red;'><b>समय समाप्त! नेगेटिव मार्किंग लागू (-1 अंक)</b></span>";
+            hintBox.style.display = "block";
+            
+            document.getElementById("next-btn").classList.remove("hidden");
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            loadQuestion();
+        }
+
+        function showResult() {
+            clearInterval(timerInterval);
+            const maxPossibleMarks = currentQuestions.length * 4;
+            let accuracy = Math.round((totalMarks / maxPossibleMarks) * 100);
+            if(accuracy < 0) accuracy = 0;
+
+            let message = "मेहनत जारी रखिए, इस बार कट-ऑफ पार करना है! 📚";
+            if(accuracy >= 80) message = "अद्भुत स्कोर! आपकी तैयारी का स्तर शीर्ष पर है! 🔥";
+            else if(accuracy >= 65) message = "बढ़िया प्रयास! थोड़ा गति और शुद्धता पर और काम करें। 👍";
+
+            document.getElementById("question-container").innerHTML = `
+                <div id="result">
+                    <p style="font-size:20px; font-weight:bold;">✨ परीक्षा परिणाम ✨</p>
+                    <div class="score-big">${totalMarks} / ${maxPossibleMarks} अंक</div>
+                    <p>कुल प्रश्न हल किए: ${currentQuestions.length}</p>
+                    <p>सफलता अनुपात (Accuracy Score): ${accuracy}%</p>
+                    <p style="font-weight:bold; color:#0b5ed7; margin-top:15px;">${message}</p>
+                </div>
+            `;
+            document.getElementById("next-btn").classList.add("hidden");
+            document.getElementById("hint-container").style.display = "none";
+            document.getElementById("restart-btn").classList.remove("hidden");
+        }
+
+        function restartTest() {
+            document.getElementById("quiz-screen").classList.add("hidden");
+            document.getElementById("setup-screen").classList.remove("hidden");
+        }
+    </script>
+</body>
+</html>
